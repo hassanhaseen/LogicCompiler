@@ -12,11 +12,107 @@ st.set_page_config(
     layout="centered"
 )
 
+# ========== CUSTOM CSS ==========
+st.markdown("""
+    <style>
+        /* Hide default Streamlit style elements */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+
+        /* Remove top padding */
+        .block-container {
+            padding-top: 0rem !important;
+            padding-bottom: 0rem !important;
+        }
+
+        /* Body background */
+        body {
+            background-color: #0f1117;
+        }
+
+        /* Main container */
+        .main-container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #1c1f26;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            color: #f5f6fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Header styling */
+        .header h1 {
+            font-size: 3rem;
+            color: #4facfe;
+            margin-bottom: 0.3rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #a0a4b8;
+        }
+
+        /* Status messages */
+        .status-message {
+            text-align: center;
+            margin-top: 1rem;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .error-message {
+            text-align: center;
+            margin-top: 1rem;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        /* Text area */
+        textarea {
+            border-radius: 8px !important;
+            background-color: #2b2f3a !important;
+            color: #ffffff !important;
+            font-size: 1rem !important;
+            border: 1px solid #4facfe !important;
+        }
+
+        /* Buttons */
+        .stButton>button {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .stButton>button:hover {
+            transform: scale(1.03);
+            box-shadow: 0px 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: #a0a4b8;
+            font-size: 0.9rem;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # ========== LOAD VOCABULARY ==========
 vocab_path = "vocabulary.json"
 
 if not os.path.isfile(vocab_path):
-    st.error(f"❌ vocabulary.json file not found in the directory!")
+    st.error("❌ vocabulary.json file not found in the directory!")
     st.stop()
 
 with open(vocab_path, "r") as f:
@@ -119,77 +215,31 @@ def translate(model, input_tokens, vocab, device, max_length=50):
     except Exception as e:
         return f"❌ Translation error: {str(e)}"
 
-# ========== CUSTOM CSS ==========
-st.markdown("""
-    <style>
-        body {
-            background-color: #f4f4f4;
-        }
-        .block-container {
-            padding-top: 1rem;
-        }
-        .main-container {
-            max-width: 900px;
-            margin: auto;
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            color: #007acc;
-            font-size: 2.5rem;
-        }
-        .footer {
-            text-align: center;
-            font-size: 0.9rem;
-            color: gray;
-            margin-top: 50px;
-        }
-        .status-message {
-            text-align: center;
-            font-size: 1rem;
-            color: green;
-            margin-bottom: 20px;
-        }
-        .error-message {
-            text-align: center;
-            font-size: 1rem;
-            color: red;
-            margin-bottom: 20px;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-# ========== APP UI ==========
+# ========== MAIN CONTAINER ==========
 st.markdown("<div class='main-container'>", unsafe_allow_html=True)
 
-# HEADER
+# ========== HEADER ==========
 st.markdown("""
     <div class='header'>
-        <h1>LogicCompiler 📝 ➡️ 💻</h1>
+        <h1>LogicCompiler</h1>
         <p>Convert Pseudocode into C++ Code Seamlessly</p>
     </div>
 """, unsafe_allow_html=True)
 
-# LOAD MODEL
+# ========== LOAD MODEL ==========
 model = load_model("p2c1.pth")
 
-# MODEL STATUS
+# ========== MODEL STATUS ==========
 if model:
     st.markdown("<div class='status-message'>✅ Model loaded successfully!</div>", unsafe_allow_html=True)
 else:
     st.markdown("<div class='error-message'>❌ Model not loaded. Check the file!</div>", unsafe_allow_html=True)
 
-# INPUT
-st.markdown("### Enter your pseudocode below:")
+# ========== INPUT SECTION ==========
+st.subheader("📝 Enter your pseudocode:")
 input_text = st.text_area("", height=200, placeholder="Write your pseudocode here...")
 
-# TRANSLATE BUTTON
+# ========== TRANSLATE BUTTON ==========
 if st.button("Translate to C++ Code"):
     if not input_text.strip():
         st.warning("⚠️ Please enter pseudocode to translate!")
@@ -197,10 +247,10 @@ if st.button("Translate to C++ Code"):
         with st.spinner("Translating..."):
             tokens = input_text.strip().split()
             result = translate(model, tokens, vocab, config.device)
-            st.markdown("### 🎉 Generated C++ Code:")
+            st.subheader("💻 Generated C++ Code:")
             st.code(result, language="cpp")
 
-# FOOTER
+# ========== FOOTER ==========
 st.markdown("""
     <div class='footer'>
         © 2025 Hassan Haseen - LogicCompiler v1.0
