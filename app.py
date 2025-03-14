@@ -1,4 +1,3 @@
-import re
 import streamlit as st
 import torch
 import torch.nn as nn
@@ -9,22 +8,20 @@ import math
 st.set_page_config(
     page_title="LogicCompiler",
     page_icon="📝➡️💻",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
 # Load vocabulary
 try:
     with open("vocabulary.json", "r") as f:
         vocab = json.load(f)
-    st.sidebar.write(f"✅ Vocabulary loaded with {len(vocab)} tokens")
 except FileNotFoundError:
     vocab = {}
-    st.sidebar.warning("Vocabulary file not found.")
 
 # Transformer Configuration
 class Config:
-    vocab_size = 12006  # Adjust as needed
+    vocab_size = 12006
     max_length = 100
     embed_dim = 256
     num_heads = 8
@@ -80,10 +77,8 @@ def load_model(model_path):
         model = Seq2SeqTransformer(config).to(config.device)
         model.load_state_dict(torch.load(model_path, map_location=config.device))
         model.eval()
-        st.sidebar.success(f"✅ Model loaded from {model_path}")
         return model
     except Exception as e:
-        st.sidebar.error(f"❌ Error loading model: {str(e)}")
         return None
 
 def translate(model, input_tokens, vocab, device, max_length=50):
@@ -109,31 +104,71 @@ def translate(model, input_tokens, vocab, device, max_length=50):
     except Exception as e:
         return f"Translation error: {str(e)}"
 
-# UI Header
+# UI Styling
 st.markdown("""
-    <h1 style='text-align: center; color: #007acc;'>LogicCompiler 📝 ➡️ 💻</h1>
-    <p style='text-align: center;'>Convert pseudocode into C++ code effortlessly!</p>
-    """, unsafe_allow_html=True)
+    <style>
+        body {
+            background-color: #f4f4f4;
+        }
+        .main-container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #007acc;
+            font-size: 2.5rem;
+        }
+        .footer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: gray;
+            margin-top: 50px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Page Content
+st.markdown("<div class='main-container'>", unsafe_allow_html=True)
+
+# Header
+st.markdown("""
+    <div class='header'>
+        <h1>LogicCompiler 📝 ➡️ 💻</h1>
+        <p>Convert Pseudocode into C++ Code Seamlessly</p>
+    </div>
+""", unsafe_allow_html=True)
 
 # Load model
 model = load_model("p2c1.pth")
 
-# Code Input
-st.markdown("### Enter your pseudocode:")
-input_text = st.text_area("Pseudocode Input", height=200, placeholder="Write your pseudocode here...")
+# Input Area
+st.markdown("### Enter your pseudocode below:")
+input_text = st.text_area("", height=200, placeholder="Write your pseudocode here...")
 
 # Translate Button
 if st.button("Translate to C++ Code"):
     if not input_text.strip():
-        st.warning("Please enter some pseudocode to translate!")
+        st.warning("⚠️ Please enter pseudocode to translate!")
     else:
         with st.spinner("Translating..."):
             tokens = input_text.strip().split()
             result = translate(model, tokens, vocab, config.device)
-            st.markdown("### Generated C++ Code")
+            st.markdown("### 🎉 Generated C++ Code:")
             st.code(result, language="cpp")
 
-# Sidebar Info
-st.sidebar.title("LogicCompiler Info")
-st.sidebar.info("Version 1.0")
-st.sidebar.markdown("Developed by Hassan Haseen © 2025")
+# Footer
+st.markdown("""
+    <div class='footer'>
+        © 2025 Hassan Haseen - LogicCompiler v1.0
+    </div>
+""", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
