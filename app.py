@@ -162,7 +162,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Load model
-model = load_model("p2c1.pth")
+model = load_model("./p2c1.pth")
 
 # Model Status Message
 if model is not None:
