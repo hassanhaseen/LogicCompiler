@@ -16,11 +16,6 @@ st.set_page_config(
 # ========== CUSTOM CSS ==========
 st.markdown("""
     <style>
-    /* Hide Streamlit UI */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-
     /* Background and fonts */
     .stApp {
         background: linear-gradient(to bottom right, #1A1A1D, #0D0D0D);
@@ -79,7 +74,7 @@ st.markdown("""
     }
 
     .footer span:hover::after {
-        content: " LogicCompiler v1.0 | Powered by Streamlit & PyTorch ";
+        content: " Hassan Haseen & Sameen Muzaffar ";
         position: absolute;
         top: -30px;
         right: 0;
