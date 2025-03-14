@@ -3,23 +3,26 @@ import torch
 import torch.nn as nn
 import json
 import math
+import os
 
-# Set page config
+# ========== PAGE CONFIG ==========
 st.set_page_config(
     page_title="LogicCompiler",
     page_icon="📝➡️💻",
-    layout="centered",
-    initial_sidebar_state="collapsed"
+    layout="centered"
 )
 
-# Load vocabulary
-try:
-    with open("vocabulary.json", "r") as f:
-        vocab = json.load(f)
-except FileNotFoundError:
-    vocab = {}
+# ========== LOAD VOCABULARY ==========
+vocab_path = "vocabulary.json"
 
-# Transformer Configuration
+if not os.path.isfile(vocab_path):
+    st.error(f"❌ vocabulary.json file not found in the directory!")
+    st.stop()
+
+with open(vocab_path, "r") as f:
+    vocab = json.load(f)
+
+# ========== CONFIG ==========
 class Config:
     vocab_size = 12006
     max_length = 100
@@ -32,7 +35,7 @@ class Config:
 
 config = Config()
 
-# Positional Encoding
+# ========== POSITIONAL ENCODING ==========
 class PositionalEncoding(nn.Module):
     def __init__(self, embed_dim, max_len=100):
         super(PositionalEncoding, self).__init__()
@@ -46,7 +49,7 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         return x + self.pe[:, :x.size(1)].to(x.device)
 
-# Transformer Model
+# ========== TRANSFORMER MODEL ==========
 class Seq2SeqTransformer(nn.Module):
     def __init__(self, config):
         super(Seq2SeqTransformer, self).__init__()
@@ -71,23 +74,32 @@ class Seq2SeqTransformer(nn.Module):
         out = self.fc_out(out.permute(1, 0, 2))
         return out
 
+# ========== LOAD MODEL ==========
 @st.cache_resource
 def load_model(model_path):
+    if not os.path.isfile(model_path):
+        st.error(f"❌ Model file '{model_path}' not found in the directory!")
+        return None
+
     try:
         model = Seq2SeqTransformer(config).to(config.device)
-        model.load_state_dict(torch.load(model_path, map_location=config.device))
+        state_dict = torch.load(model_path, map_location=config.device)
+        model.load_state_dict(state_dict)
         model.eval()
         return model
     except Exception as e:
+        st.error(f"❌ Error loading model: {str(e)}")
         return None
 
+# ========== TRANSLATE FUNCTION ==========
 def translate(model, input_tokens, vocab, device, max_length=50):
     if model is None:
-        return "Model not loaded."
-    model.eval()
+        return "❌ Model not loaded."
+
     try:
         input_ids = [vocab.get(token, vocab.get("<unk>", 1)) for token in input_tokens]
         input_tensor = torch.tensor(input_ids, dtype=torch.long).unsqueeze(0).to(device)
+
         output_ids = [vocab.get("<start>", 2)]
 
         for _ in range(max_length):
@@ -95,16 +107,19 @@ def translate(model, input_tokens, vocab, device, max_length=50):
             with torch.no_grad():
                 predictions = model(input_tensor, output_tensor)
             next_token_id = predictions.argmax(dim=-1)[:, -1].item()
+
             output_ids.append(next_token_id)
+
             if next_token_id == vocab.get("<end>", 3):
                 break
 
         id_to_token = {idx: token for token, idx in vocab.items()}
         return " ".join([id_to_token.get(idx, "<unk>") for idx in output_ids[1:]])
-    except Exception as e:
-        return f"Translation error: {str(e)}"
 
-# UI Styling
+    except Exception as e:
+        return f"❌ Translation error: {str(e)}"
+
+# ========== CUSTOM CSS ==========
 st.markdown("""
     <style>
         body {
@@ -150,10 +165,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Page Content
+# ========== APP UI ==========
 st.markdown("<div class='main-container'>", unsafe_allow_html=True)
 
-# Header
+# HEADER
 st.markdown("""
     <div class='header'>
         <h1>LogicCompiler 📝 ➡️ 💻</h1>
@@ -161,28 +176,20 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Load model
-model = load_model("./p2c1.pth")
+# LOAD MODEL
+model = load_model("p2c1.pth")
 
-# Model Status Message
-if model is not None:
-    st.markdown("""
-        <div class='status-message'>
-            ✅ Model loaded successfully!
-        </div>
-    """, unsafe_allow_html=True)
+# MODEL STATUS
+if model:
+    st.markdown("<div class='status-message'>✅ Model loaded successfully!</div>", unsafe_allow_html=True)
 else:
-    st.markdown("""
-        <div class='error-message'>
-            ❌ Model not loaded. Please check the model path or file.
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<div class='error-message'>❌ Model not loaded. Check the file!</div>", unsafe_allow_html=True)
 
-# Input Area
+# INPUT
 st.markdown("### Enter your pseudocode below:")
 input_text = st.text_area("", height=200, placeholder="Write your pseudocode here...")
 
-# Translate Button
+# TRANSLATE BUTTON
 if st.button("Translate to C++ Code"):
     if not input_text.strip():
         st.warning("⚠️ Please enter pseudocode to translate!")
@@ -193,7 +200,7 @@ if st.button("Translate to C++ Code"):
             st.markdown("### 🎉 Generated C++ Code:")
             st.code(result, language="cpp")
 
-# Footer
+# FOOTER
 st.markdown("""
     <div class='footer'>
         © 2025 Hassan Haseen - LogicCompiler v1.0
