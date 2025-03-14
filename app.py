@@ -4,7 +4,7 @@ import torch.nn as nn
 import json
 import math
 
-# Set page config for better appearance
+# Set page config
 st.set_page_config(
     page_title="LogicCompiler",
     page_icon="📝➡️💻",
@@ -110,6 +110,9 @@ st.markdown("""
         body {
             background-color: #f4f4f4;
         }
+        .block-container {
+            padding-top: 1rem;
+        }
         .main-container {
             max-width: 900px;
             margin: auto;
@@ -132,6 +135,18 @@ st.markdown("""
             color: gray;
             margin-top: 50px;
         }
+        .status-message {
+            text-align: center;
+            font-size: 1rem;
+            color: green;
+            margin-bottom: 20px;
+        }
+        .error-message {
+            text-align: center;
+            font-size: 1rem;
+            color: red;
+            margin-bottom: 20px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -148,6 +163,20 @@ st.markdown("""
 
 # Load model
 model = load_model("p2c1.pth")
+
+# Model Status Message
+if model is not None:
+    st.markdown("""
+        <div class='status-message'>
+            ✅ Model loaded successfully!
+        </div>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+        <div class='error-message'>
+            ❌ Model not loaded. Please check the model path or file.
+        </div>
+    """, unsafe_allow_html=True)
 
 # Input Area
 st.markdown("### Enter your pseudocode below:")
