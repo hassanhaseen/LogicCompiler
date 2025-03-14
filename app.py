@@ -7,104 +7,97 @@ import os
 
 # ========== PAGE CONFIG ==========
 st.set_page_config(
-    page_title="LogicCompiler",
+    page_title="LogicCompiler - Pseudocode to C++",
     page_icon="📝➡️💻",
-    layout="centered"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
 # ========== CUSTOM CSS ==========
 st.markdown("""
     <style>
-        /* Hide default Streamlit style elements */
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
+    /* Hide Streamlit UI */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
 
-        /* Remove top padding */
-        .block-container {
-            padding-top: 0rem !important;
-            padding-bottom: 0rem !important;
-        }
+    /* Background and fonts */
+    .stApp {
+        background: linear-gradient(to bottom right, #1A1A1D, #0D0D0D);
+        color: #F0EAD6;
+        font-family: 'Georgia', serif;
+    }
 
-        /* Body background */
-        body {
-            background-color: #0f1117;
-        }
+    /* Title */
+    h1 {
+        color: #4facfe !important;
+        text-align: center;
+        font-size: 3rem;
+    }
 
-        /* Main container */
-        .main-container {
-            max-width: 800px;
-            margin: auto;
-            background-color: #1c1f26;
-            padding: 3rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            color: #f5f6fa;
-            font-family: 'Segoe UI', sans-serif;
-        }
+    /* Subtitles & sections */
+    h2, h3, .stMarkdown {
+        color: #a0a4b8 !important;
+    }
 
-        /* Header styling */
-        .header h1 {
-            font-size: 3rem;
-            color: #4facfe;
-            margin-bottom: 0.3rem;
-        }
+    /* Text inputs and text areas */
+    textarea {
+        background-color: #262730 !important;
+        color: #F0EAD6 !important;
+        border: 1px solid #4facfe !important;
+        border-radius: 8px !important;
+        font-size: 1rem !important;
+    }
 
-        .header p {
-            font-size: 1.1rem;
-            color: #a0a4b8;
-        }
+    /* Buttons */
+    .stButton > button {
+        background: linear-gradient(90deg, #4facfe, #00f2fe);
+        color: #0D0D0D;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
 
-        /* Status messages */
-        .status-message {
-            text-align: center;
-            margin-top: 1rem;
-            color: #2ecc71;
-            font-weight: bold;
-        }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0px 8px 16px rgba(79, 172, 254, 0.3);
+    }
 
-        .error-message {
-            text-align: center;
-            margin-top: 1rem;
-            color: #e74c3c;
-            font-weight: bold;
-        }
+    /* Footer styling */
+    .footer {
+        position: relative;
+        display: inline-block;
+        color: #888;
+        text-align: center;
+        margin-top: 3rem;
+        font-size: 0.9rem;
+    }
 
-        /* Text area */
-        textarea {
-            border-radius: 8px !important;
-            background-color: #2b2f3a !important;
-            color: #ffffff !important;
-            font-size: 1rem !important;
-            border: 1px solid #4facfe !important;
-        }
+    .footer span:hover::after {
+        content: " LogicCompiler v1.0 | Powered by Streamlit & PyTorch ";
+        position: absolute;
+        top: -30px;
+        right: 0;
+        transform: translateX(0%);
+        background-color: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        white-space: nowrap;
+        font-size: 0.8rem;
+        opacity: 1;
+        z-index: 10;
+    }
 
-        /* Buttons */
-        .stButton>button {
-            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .stButton>button:hover {
-            transform: scale(1.03);
-            box-shadow: 0px 4px 15px rgba(79, 172, 254, 0.4);
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            margin-top: 3rem;
-            color: #a0a4b8;
-            font-size: 0.9rem;
-        }
+    /* Center content */
+    .block-container {
+        padding-top: 1rem;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -215,32 +208,25 @@ def translate(model, input_tokens, vocab, device, max_length=50):
     except Exception as e:
         return f"❌ Translation error: {str(e)}"
 
-# ========== MAIN CONTAINER ==========
-st.markdown("<div class='main-container'>", unsafe_allow_html=True)
+# ========== MAIN UI ==========
+st.title("📝➡️💻 LogicCompiler")
+st.markdown("##### Convert your Pseudocode into C++ Code Seamlessly")
 
-# ========== HEADER ==========
-st.markdown("""
-    <div class='header'>
-        <h1>LogicCompiler</h1>
-        <p>Convert Pseudocode into C++ Code Seamlessly</p>
-    </div>
-""", unsafe_allow_html=True)
-
-# ========== LOAD MODEL ==========
+# Load model
 model = load_model("p2c1.pth")
 
-# ========== MODEL STATUS ==========
+# Model status message
 if model:
-    st.markdown("<div class='status-message'>✅ Model loaded successfully!</div>", unsafe_allow_html=True)
+    st.success("✅ Model loaded successfully!")
 else:
-    st.markdown("<div class='error-message'>❌ Model not loaded. Check the file!</div>", unsafe_allow_html=True)
+    st.error("❌ Model not loaded. Please check the file path!")
 
-# ========== INPUT SECTION ==========
-st.subheader("📝 Enter your pseudocode:")
+# Input
+st.subheader("✍️ Enter your Pseudocode:")
 input_text = st.text_area("", height=200, placeholder="Write your pseudocode here...")
 
-# ========== TRANSLATE BUTTON ==========
-if st.button("Translate to C++ Code"):
+# Translate Button
+if st.button("✨ Translate to C++ Code", use_container_width=True):
     if not input_text.strip():
         st.warning("⚠️ Please enter pseudocode to translate!")
     else:
@@ -250,11 +236,10 @@ if st.button("Translate to C++ Code"):
             st.subheader("💻 Generated C++ Code:")
             st.code(result, language="cpp")
 
-# ========== FOOTER ==========
+# Footer
 st.markdown("""
-    <div class='footer'>
-        © 2025 Hassan Haseen - LogicCompiler v1.0
-    </div>
+---
+<p class="footer" style="text-align: center;">
+    Built with ❤️ by <span>Team CodeRunners</span>
+</p>
 """, unsafe_allow_html=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
